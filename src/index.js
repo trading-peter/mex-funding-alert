@@ -3,6 +3,7 @@
 const Fetch = require('node-fetch');
 const Fs = require('fs-extra');
 const Path = require('path');
+const Twit = require('twit');
 
 const symbols = [ 'XBT', 'ETH' ];
 
@@ -15,6 +16,14 @@ async function run(dbFile) {
     await Fs.mkdirp(Path.dirname(dbFile));
     await Fs.writeJSONSync(dbFile, []);
   }
+
+  const TwitterApi = new Twit({
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    access_token: process.env.TWITTER_ACCESS_TOKEN,
+    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+    timeout_ms: 120 * 1000,  // optional HTTP request timeout to apply to all requests.
+  });
 
   let history = await Fs.readJson(dbFile);
 
@@ -44,7 +53,12 @@ async function run(dbFile) {
         });
 
         if (results.length > 0) {
-          console.log(results.join('\n'));
+          TwitterApi.post('statuses/update', { status: results.join('\n') }, function(err, data, response) {
+            if (err) {
+              console.log(err);
+            }
+            console.log(data)
+          });
         }
 
         await Fs.writeJSON(dbFile, rates);

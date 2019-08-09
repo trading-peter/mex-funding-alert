@@ -9,6 +9,7 @@
   "private": false,
   "dependencies": {
     "fs-extra": "^8.1.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "twit": "^2.2.11"
   }
 }

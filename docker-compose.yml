@@ -1,0 +1,14 @@
+version: "3"
+services:
+  nodejs:
+    container_name: mex-funding-alert-nodejs
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      TWITTER_CONSUMER_KEY: ...
+      TWITTER_CONSUMER_SECRET: ...
+      TWITTER_ACCESS_TOKEN: ...
+      TWITTER_ACCESS_TOKEN_SECRET: ...
+    volumes:
+      - .:/home/node/app
