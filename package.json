@@ -1,0 +1,14 @@
+{
+  "name": "mex-funding-alert",
+  "version": "1.0.0",
+  "description": "Get an alert if funding on flips.",
+  "main": "index.js",
+  "repository": "https://github.com/pkaske/mex-funding-alert.git",
+  "author": "Peter Kaske <p.kaske@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "fs-extra": "^8.1.0",
+    "node-fetch": "^2.6.0"
+  }
+}
