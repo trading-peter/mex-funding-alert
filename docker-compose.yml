@@ -12,3 +12,4 @@ services:
       TWITTER_ACCESS_TOKEN_SECRET: ...
     volumes:
       - .:/home/node/app
+    restart: always
