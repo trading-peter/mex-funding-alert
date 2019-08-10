@@ -31,7 +31,7 @@ async function run(dbFile) {
     try {
       let rates = await Promise.all(symbols.map(symbol => Fetch(`https://www.bitmex.com/api/v1/instrument?symbol=${symbol}&count=1&reverse=true`).then(res => res.json())));
       const results = [];
-      
+
       if (Array.isArray(rates)) {
         rates = prepFundingRates(rates);
 
@@ -57,7 +57,6 @@ async function run(dbFile) {
             if (err) {
               console.log(err);
             }
-            console.log(data)
           });
         }
 
@@ -67,7 +66,7 @@ async function run(dbFile) {
     } catch (err) {
       console.log('Failed to fetch funding', err);
     }
-  }, 1000 * 4);
+  }, 1000 * 60);
 }
 
 function prepFundingRates(rates) {
@@ -84,11 +83,11 @@ function prepFundingRates(rates) {
 
 function compareFunding(lastRate, newRate) {
   try {
-    const lastType = lastRate.fundingRate < 0 ? 'Shorts pay Longs' : 'Longs pay shorts';
-    const newType = newRate.fundingRate < 0 ? 'Shorts pay Longs' : 'Longs pay shorts';
+    const lastType = lastRate.fundingRate > 0;
+    const newType = newRate.fundingRate > 0;
   
     if (lastType !== newType) {
-      return `Funding flipped for ${newRate.symbol}. ${newType} (${newRate.fundingRate})`;
+      return `Funding for ${newRate.symbol} flipped ${newType ? '↗️ positive' : '↘ negative'}. New rate is ${newRate.fundingRate}.`;
     }
   } catch (err) { /* BitMex probably send invalid data */ }
 }
