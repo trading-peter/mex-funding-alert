@@ -3,6 +3,7 @@
 const Fetch = require('node-fetch');
 const Fs = require('fs-extra');
 const Path = require('path');
+const D = require('decimal.js');
 const Twit = require('twit');
 
 const symbols = [ 'XBT', 'ETH' ];
@@ -83,11 +84,29 @@ function prepFundingRates(rates) {
 
 function compareFunding(lastRate, newRate) {
   try {
-    const lastType = lastRate.fundingRate > 0;
-    const newType = newRate.fundingRate > 0;
+    const lastType = D(lastRate.fundingRate).gte(0);
+    const newType = D(newRate.fundingRate).gte(0);
+    const hasFlipped = lastType !== newType;
+
+    const newFunding = D(newRate.fundingRate);
+    const lastFunding = D(lastRate.fundingRate);
   
-    if (lastType !== newType) {
-      return `Funding for ${newRate.symbol} flipped ${newType ? '↗️ positive' : '↘ negative'}. New rate is ${newRate.fundingRate}.`;
+    if (hasFlipped) {
+      if (newFunding.gt(lastFunding)) {
+        return `🚨  Funding for ${newRate.symbol} flipped ↗️ positive from ${lastFunding.toFixed(4)} to ${newFunding.toFixed(4)} (+${D(newFunding).sub(lastFunding).toFixed(4)}).`;
+      }
+  
+      if (newFunding.lt(lastFunding)) {
+        return `🚨  Funding for ${newRate.symbol} flipped ↘ negative from ${lastFunding.toFixed(4)} to ${newFunding.toFixed(4)} (-${D(lastFunding).sub(newFunding).toFixed(4)}).`;
+      }
+    }
+
+    if (newFunding.gt(lastFunding)) {
+      return `➕  Funding for ${newRate.symbol} increased from ${lastFunding.toFixed(4)} to ${newFunding.toFixed(4)} (+${D(newFunding).sub(lastFunding).toFixed(4)}).`
+    }
+
+    if (newFunding.lt(lastFunding)) {
+      return `➖  Funding for ${newRate.symbol} decreased from ${lastFunding.toFixed(4)} to ${newFunding.toFixed(4)} (-${D(lastFunding).sub(newFunding).toFixed(4)}).`
     }
   } catch (err) { /* BitMex probably send invalid data */ }
 }
