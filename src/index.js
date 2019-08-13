@@ -36,6 +36,10 @@ async function run(dbFile) {
       if (Array.isArray(rates)) {
         rates = prepFundingRates(rates);
 
+        const recHistory = await Fs.readJSON(Path.join(Path.dirname(dbFile), 'recHistory.json'));
+        recHistory.push(rates);
+        await Fs.writeJSON(Path.join(Path.dirname(dbFile), 'recHistory.json'), recHistory);
+
         rates.forEach(rate => {
           const lastRate = history.find(entry => entry.symbol === rate.symbol);
 
@@ -90,6 +94,8 @@ function compareFunding(lastRate, newRate) {
 
     const newFunding = D(newRate.fundingRate);
     const lastFunding = D(lastRate.fundingRate);
+
+    if (newFunding.sub(lastFunding).abs().lte(0.0005)) return;
   
     if (hasFlipped) {
       if (newFunding.gt(lastFunding)) {
