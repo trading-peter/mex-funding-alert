@@ -36,15 +36,11 @@ async function run(dbFile) {
       if (Array.isArray(rates)) {
         rates = prepFundingRates(rates);
 
-        const recHistory = await Fs.readJSON(Path.join(Path.dirname(dbFile), 'recHistory.json'));
-        recHistory.push(rates);
-        await Fs.writeJSON(Path.join(Path.dirname(dbFile), 'recHistory.json'), recHistory);
-
         rates.forEach(rate => {
           const lastRate = history.find(entry => entry.symbol === rate.symbol);
 
           if (lastRate) {
-            const result = compareFunding(lastRate, rate);
+            const result = compareFunding(lastRate, rate, rates, dbFile);
             if (result) {
               results.push(result);
             }
@@ -86,7 +82,7 @@ function prepFundingRates(rates) {
   return rates;
 }
 
-function compareFunding(lastRate, newRate) {
+function compareFunding(lastRate, newRate, rates, dbFile) {
   try {
     const lastType = D(lastRate.fundingRate).gte(0);
     const newType = D(newRate.fundingRate).gte(0);
@@ -94,6 +90,12 @@ function compareFunding(lastRate, newRate) {
 
     const newFunding = D(newRate.fundingRate);
     const lastFunding = D(lastRate.fundingRate);
+
+    if (!newFunding.eq(lastFunding)) {
+      let recHistory = Fs.readJSONSync(Path.join(Path.dirname(dbFile), 'recHistory.json'));
+      recHistory.push(rates);
+      Fs.writeJSONSync(Path.join(Path.dirname(dbFile), 'recHistory.json'), recHistory);
+    }
 
     if (newFunding.sub(lastFunding).abs().lte(0.0005)) return;
   
